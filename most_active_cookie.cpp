@@ -2,8 +2,7 @@
 #include <getopt.h>
 #include <string.h>
 #include <fstream>
-#include <sstream>
-#include <unordered_map>
+#include <vector>
 
 using namespace std;
 
@@ -46,6 +45,63 @@ class Driver
 };
 
 
+/*
+Hash Table
+    - Implements hashing function
+    - Implements finding index in array
+    - Utilizes quadratic probing for collision handling
+    - Takes inputs by reference for efficiency and so that inputs can be modified
+*/
+class HashTable
+{
+    public:
+    int hashVal(string &cookie)
+    {
+        int val = 0;
+        char letter;
+
+        for (int i = 0; i < 3; i++)
+        {
+            letter = cookie[i];
+            val += letter;
+        }
+
+        return val;
+    }
+
+    //If cookie ID is present in table, increments frequency counter
+    //If not, pushes cookie to the correct position with frequency 1
+    //Returns frequency to compare with max
+    int find_and_push(vector<pair<string, int> > &cookieTable, string &cookie)
+    {
+        int i = 0;
+        int val = hashVal(cookie);
+
+        int mapIdx = (val + i*i) % cookieTable.size();
+
+        while(cookieTable[mapIdx].first != "")
+        {
+            if (cookieTable[mapIdx].first.compare(cookie) == 0)
+            {
+                cookieTable[mapIdx].second++;
+                return cookieTable[mapIdx].second;
+            }
+            else
+            {
+                i++;
+                mapIdx = (val + i*i) % cookieTable.size();
+            }
+        }
+
+        cookieTable[mapIdx].first = cookie;
+        cookieTable[mapIdx].second = 1;
+
+        return 1;
+    }
+
+};
+
+
 int main (int argc, char** argv)
 {    
     Driver theDriver;
@@ -83,7 +139,10 @@ int main (int argc, char** argv)
    //we have passed the range of cookies and can break out of the loop.
     bool dateRange = 0; 
 
-    unordered_map<string, int> cookieHash;
+    HashTable cookieHash;
+    vector<pair<string, int> > cookieTable;
+    cookieTable.resize(500);
+
     int max_frequency = 0;
 
     while(getline(fin, line))
@@ -98,21 +157,19 @@ int main (int argc, char** argv)
         else
         {
             dateRange = 1;
-            cookieHash[id]++;
-            if (cookieHash[id] > max_frequency){max_frequency = cookieHash[id];}
+            int tempMax = cookieHash.find_and_push(cookieTable, id);
+            if (tempMax > max_frequency){max_frequency = tempMax;}
         }
-
     }
 
-    unordered_map<string, int>::iterator it = cookieHash.begin();
-     
-    //Iterating over the map using iterator until map end.
-    while (it != cookieHash.end())
+
+    for(size_t i = 0; i < cookieTable.size(); i++)
     {
-        if (it->second == max_frequency){cout << it->first << '\n';}
-        it++;
+        if (cookieTable[i].second == max_frequency && max_frequency != 0)
+        {
+            cout << cookieTable[i].first << "\n";
+        }
     }
-    return 0;
 
     fin.close();
     return 1;
