@@ -48,7 +48,7 @@ class Driver
 Hash Table
     - Implements hashing function
     - Implements finding index in array
-    - Utilizes quadratic probing for collision handling
+    - Utilizes linear probing for collision handling
     - Takes inputs by reference for efficiency and so that inputs can be modified
 */
 class HashTable
@@ -71,12 +71,12 @@ class HashTable
     //If cookie ID is present in table, increments frequency counter
     //If not, pushes cookie to the correct position with frequency 1
     //Returns frequency to compare with max
-    int find_and_push(pair<string, int> cookieTable[500], string &cookie) // SIZE 500
+    int find_and_push(pair<string, int> cookieTable[], string &cookie, int numRows)
     {
         int i = 0;
         int val = hashVal(cookie);
 
-        int mapIdx = (val + i*i) % 500; //SIZE 500
+        int mapIdx = (val + i) % numRows;
 
         while(cookieTable[mapIdx].first != "")
         {
@@ -88,7 +88,7 @@ class HashTable
             else
             {
                 i++;
-                mapIdx = (val + i*i) % 500; //SIZE 500
+                mapIdx = (val + i) % numRows;
             }
         }
 
@@ -107,16 +107,29 @@ int main (int argc, char** argv)
     string fname = theDriver.get_filename(argc, argv);
     string cookieDate = theDriver.get_options(argc, argv);
 
+    string line;
+
     //Opens file
+    ifstream fin2(fname);
+    if (fin2.is_open() == 0)
+    {
+        cout << "Error: file could not be opened.";
+        return 1;
+    }
+
+    //Retrieves number of rows in file in one pass
+    int rowCounter = 0;
+    while(getline(fin2, line)){rowCounter++;}
+    fin2.close();
+    const int numRows = rowCounter;
+
+
     ifstream fin(fname);
     if (fin.is_open() == 0)
     {
         cout << "Error: file could not be opened.";
         return 1;
     }
-
-    string line;
-
     //Take in the top of the input file (cookies, timestamp)
     getline(fin, line);
 
@@ -140,8 +153,7 @@ int main (int argc, char** argv)
 
     HashTable cookieHash;
 
-    //SIZE 500
-    pair<string, int> cookieTable[500];
+    pair<string, int> cookieTable[numRows];
 
 
     int max_frequency = 0;
@@ -158,13 +170,12 @@ int main (int argc, char** argv)
         else
         {
             dateRange = 1;
-            int tempMax = cookieHash.find_and_push(cookieTable, id);
+            int tempMax = cookieHash.find_and_push(cookieTable, id, numRows);
             if (tempMax > max_frequency){max_frequency = tempMax;}
         }
     }
 
-    //SIZE 500
-    for(size_t i = 0; i < 500; i++)
+    for(size_t i = 0; i < numRows; i++)
     {
         if (cookieTable[i].second == max_frequency && max_frequency != 0)
         {
