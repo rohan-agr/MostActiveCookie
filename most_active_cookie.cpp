@@ -2,7 +2,6 @@
 #include <getopt.h>
 #include <string.h>
 #include <fstream>
-#include <vector>
 
 using namespace std;
 
@@ -72,12 +71,12 @@ class HashTable
     //If cookie ID is present in table, increments frequency counter
     //If not, pushes cookie to the correct position with frequency 1
     //Returns frequency to compare with max
-    int find_and_push(vector<pair<string, int> > &cookieTable, string &cookie)
+    int find_and_push(pair<string, int> cookieTable[500], string &cookie) // SIZE 500
     {
         int i = 0;
         int val = hashVal(cookie);
 
-        int mapIdx = (val + i*i) % cookieTable.size();
+        int mapIdx = (val + i*i) % 500; //SIZE 500
 
         while(cookieTable[mapIdx].first != "")
         {
@@ -89,7 +88,7 @@ class HashTable
             else
             {
                 i++;
-                mapIdx = (val + i*i) % cookieTable.size();
+                mapIdx = (val + i*i) % 500; //SIZE 500
             }
         }
 
@@ -140,8 +139,10 @@ int main (int argc, char** argv)
     bool dateRange = 0; 
 
     HashTable cookieHash;
-    vector<pair<string, int> > cookieTable;
-    cookieTable.resize(500);
+
+    //SIZE 500
+    pair<string, int> cookieTable[500];
+
 
     int max_frequency = 0;
 
@@ -162,8 +163,8 @@ int main (int argc, char** argv)
         }
     }
 
-
-    for(size_t i = 0; i < cookieTable.size(); i++)
+    //SIZE 500
+    for(size_t i = 0; i < 500; i++)
     {
         if (cookieTable[i].second == max_frequency && max_frequency != 0)
         {
